@@ -1,0 +1,119 @@
+<?php
+
+/**
+ * @file
+ * Install and schema hook implementations.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function webform_component_bundles_schema() {
+  $schema = array();
+
+  $schema['webform_bundle'] = array(
+    'description' => 'Stores information about webform bundles.',
+    'fields' => array(
+      'bid' => array(
+        'description' => 'The bundle identifier',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => '',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'machine_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The webform component bundle machine name.',
+      ),
+      'description' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => 'Bundle description.',
+        'translatable' => TRUE,
+      ),
+    ),
+    'primary key' => array('bid'),
+  );
+
+  // The schema is identical to that of webform_component.
+  $schema['webform_bundle_component'] = array(
+    'description' => 'Stores information about components for webform nodes.',
+    'fields' => array(
+      'bid' => array(
+        'description' => 'The bundle identifier',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'cid' => array(
+        'description' => 'The identifier for this component within this bundle. Starts at 0 for each bundle.',
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'pid' => array(
+        'description' => 'If this component has a parent fieldset, the cid of that component.',
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'form_key' => array(
+        'description' => 'When the form is displayed and processed, this key can be used to reference the results.',
+        'type' => 'varchar',
+        'length' => 128,
+      ),
+      'name' => array(
+        'description' => 'The label for this component.',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'type' => array(
+        'description' => 'The field type of this component (textfield, select, hidden, etc.).',
+        'type' => 'varchar',
+        'length' => 16,
+      ),
+      'value' => array(
+        'description' => 'The default value of the component when displayed to the end-user.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'extra' => array(
+        'description' => 'Additional information unique to the display or processing of this component.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'mandatory' => array(
+        'description' => 'Boolean flag for if this component is required.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'weight' => array(
+        'description' => 'Determines the position of this component in the bundle and consequently the form.',
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('bid', 'cid'),
+  );
+
+  return $schema;
+}

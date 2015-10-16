@@ -1,0 +1,310 @@
+<?php
+
+/**
+ * @file
+ * Webform Component Bundles.
+ *
+ * This module allows defining bundles of webform components to be added to new
+ * or existing webforms for faster and consistent form creation.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function webform_component_bundles_menu() {
+  $items = array();
+
+  $items['admin/content/webform-bundle'] = array(
+    'title' => 'Webform bundles',
+    'page callback' => 'webform_component_bundles_admin_content',
+    'access callback' => 'user_access',
+    'access arguments' => array('access all webform results'),
+    'description' => 'View and edit all the available webform component bundles on your site.',
+    'file' => 'includes/webform_component_bundles.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
+  );
+
+  $items['admin/content/webform-bundle/add'] = array(
+    'title' => 'Create webform bundle',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('webform_component_bundles_add_form'),
+    'access arguments' => array('create webform bundle'),
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'includes/webform_component_bundles.admin.inc',
+  );
+
+  $items['admin/content/webform-bundle/%webform_component_bundles/edit'] = array(
+    'title' => 'Edit webform bundle',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('webform_component_bundles_edit_form', 3),
+    'access arguments' => array('delete webform bundle'),
+    'file' => 'includes/webform_component_bundles.admin.inc',
+  );
+
+  $items['admin/content/webform-bundle/%webform_component_bundles/delete'] = array(
+    'title' => 'Delete webform bundle',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('webform_component_bundles_delete_form', 3),
+    'access arguments' => array('delete webform bundle'),
+    'file' => 'includes/webform_component_bundles.admin.inc',
+  );
+
+  $items['admin/content/webform-bundle/%webform_component_bundles/components'] = array(
+    'title' => 'Edit webform bundle components',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('webform_component_bundles_components_form', 3),
+    'access arguments' => array('edit webform bundle'),
+    'file' => 'includes/webform_component_bundles.components.inc',
+  );
+
+  // Bundle component forms.
+  $items['admin/content/webform-bundle/%webform_component_bundles/components/%webform_component_bundles_menu_component'] = array(
+    'load arguments' => array(3, 6),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(
+      'webform_component_bundles_component_edit_form', 3, 5, FALSE,
+    ),
+    'access arguments' => array('edit webform bundle'),
+    'file' => 'includes/webform_component_bundles.components.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/content/webform-bundle/%webform_component_bundles/components/%webform_component_bundles_menu_component/clone'] = array(
+    'load arguments' => array(3, 6),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(
+      'webform_component_bundles_component_edit_form', 3, 5, TRUE
+    ),
+    'access arguments' => array('edit webform bundle'),
+    'file' => 'includes/webform_component_bundles.components.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/content/webform-bundle/%webform_component_bundles/components/%webform_component_bundles_menu_component/delete'] = array(
+    'load arguments' => array(3, 6),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(
+      'webform_component_bundles_component_delete_form', 3, 5, TRUE
+    ),
+    'access arguments' => array('edit webform bundle'),
+    'file' => 'includes/webform_component_bundles.components.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function webform_component_bundles_permission() {
+  return array(
+    'create webform bundle' => array(
+      'title' => t('Create new webform component bundles'),
+    ),
+    'edit webform bundle' => array(
+      'title' => t('Edit webform component bundles'),
+    ),
+    'delete webform bundle' => array(
+      'title' => t('Delete webform component bundles'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_theme().
+ */
+function webform_component_bundles_theme() {
+  return array(
+    'webform_component_bundles_components_form' => array(
+      'render element' => 'form',
+      'file' => 'includes/webform_component_bundles.theme.inc',
+    ),
+  );
+}
+
+/**
+ * Menu loader callback. Loads a webform component bundle and its components.
+ *
+ * @param int $bid
+ *   The bundle id.
+ */
+function webform_component_bundles_load($bid) {
+  if (!is_numeric($bid)) {
+    return FALSE;
+  }
+
+  $bundle = db_select('webform_bundle', 'wb')
+    ->fields('wb')
+    ->condition('wb.bid', $bid, '=')
+    ->execute()->fetchObject();
+
+  if (!empty($bundle)) {
+    $bundle->components = array();
+  }
+
+  // Load components for each bundle.
+  $bundle->components = db_select('webform_bundle_component')
+    ->fields('webform_bundle_component')
+    ->condition('bid', $bid)
+    ->orderBy('weight')
+    ->orderBy('name')
+    ->execute()
+    ->fetchAllAssoc('cid', PDO::FETCH_ASSOC);
+
+  module_load_include('inc', 'webform', 'includes/webform.components');
+
+  // Do a little cleanup on each component.
+  foreach ($bundle->components as $cid => $component) {
+    $bundle->components[$cid]['bid'] = $bid;
+    $bundle->components[$cid]['extra'] = unserialize($component['extra']);
+    webform_component_defaults($bundle->components[$cid]);
+  }
+
+  // Organize the components into a fieldset-based order.
+  if (!empty($bundle->components)) {
+    $component_tree = array();
+    $page_count = 1;
+    _webform_components_tree_build($bundle->components, $component_tree, 0, $page_count);
+    if (!empty($component_tree['children'])) {
+      $bundle->components = _webform_components_tree_flatten($component_tree['children']);
+    }
+  }
+
+  return $bundle;
+}
+
+/**
+ * Menu loader callback.
+ *
+ * Load a webform bundle component if the given cid is a valid.
+ */
+function webform_component_bundles_menu_component_load($cid, $bid, $type) {
+  module_load_include('inc', 'webform', 'includes/webform.components');
+  if ($cid == 'new') {
+    $components = webform_components();
+    $component = FALSE;
+    if (in_array($type, array_keys($components))) {
+      $component = array(
+        'type' => $type,
+        'bid' => $bid,
+        'name' => $_GET['name'],
+        'mandatory' => $_GET['mandatory'],
+        'pid' => $_GET['pid'],
+        'weight' => $_GET['weight'],
+      );
+    }
+  }
+  else {
+    $bundle = webform_component_bundles_load($bid);
+    $component = isset($bundle->components[$cid]) ? $bundle->components[$cid] : FALSE;
+  }
+
+  if ($component) {
+    webform_component_defaults($component);
+  }
+
+  return $component;
+}
+
+/**
+ * Saves a given webform component bundle and its components.
+ *
+ * @param object $bundle
+ *   The bundle object.
+ */
+function webform_component_bundles_save($bundle) {
+  $original = webform_component_bundles_load($bundle->bid);
+  $components = $bundle->components;
+  unset($bundle->components);
+  drupal_write_record('webform_bundle', $bundle, array('bid'));
+
+  if ($original->components != $components) {
+    module_load_include('inc', 'webform_component_bundles', 'includes/webform_component_bundles.components');
+
+    $original_cids = array_keys($original->components);
+    $current_cids = array_keys($components);
+
+    $all_cids = array_unique(array_merge($original_cids, $current_cids));
+    $deleted_cids = array_diff($original_cids, $current_cids);
+    $inserted_cids = array_diff($current_cids, $original_cids);
+
+    foreach ($all_cids as $cid) {
+      if (in_array($cid, $inserted_cids)) {
+        webform_component_bundles_component_insert($components[$cid]);
+      }
+      elseif (in_array($cid, $deleted_cids)) {
+        webform_component_bundles_component_delete($bundle, $original->components[$cid]);
+      }
+      elseif ($components[$cid] != $original->components[$cid]) {
+        $components[$cid]['bid'] = $bundle->bid;
+        webform_component_bundles_component_update($components[$cid]);
+      }
+    }
+  }
+}
+/**
+ * Determines if a webform component bundle exists.
+ *
+ * @param string $machine_name
+ *   The bundle machine_name to check.
+ *
+ * @return bool
+ *   TRUE if the bundle exists, FALSE otherwise.
+ */
+function webform_component_bundles_bundle_exists($machine_name) {
+  return (bool) db_query_range('SELECT 1 FROM {webform_bundle} WHERE machine_name = :name', 0, 1, array(':name' => $machine_name))->fetchField();
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function webform_component_bundles_form_webform_components_form_alter(& $form, &$form_state) {
+
+  $bundles = db_select('webform_bundle')
+    ->fields('webform_bundle', array('bid', 'name'))
+    ->execute()->fetchAllKeyed(0, 1);
+
+  if (empty($bundles)) {
+    return;
+  }
+
+  $node = $form['#node'];
+
+  module_load_include('inc', 'webform_component_bundles', 'includes/webform_component_bundles.components');
+
+  $form['bundles'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Component bundles'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['bundles']['bid'] = array(
+   '#type' => 'select',
+   '#options' => array('' => '-Select bundle-') + $bundles,
+   '#description' => t('Add a component bundle to your webform. <a href="!url" target=_blank>Available bundles</a>', array('!url' => url('admin/content/webform-bundle'))),
+  );
+
+  // Get max component height.
+  foreach ($node->webform['components'] as $cid => $component) {
+    if (!isset($max_weight) || $component['weight'] > $max_weight) {
+      $max_weight = $component['weight'];
+    }
+  }
+
+  $form['bundles']['weight'] = array(
+    '#type' => 'value',
+    '#value' => isset($max_weight) ? $max_weight + 1 : 0,
+  );
+
+
+  $form['bundles']['add'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add component bundle'),
+    '#weight' => 45,
+    '#validate' => array('webform_component_bundles_form_add_validate'),
+    '#submit' => array('webform_component_bundless_form_add_submit'),
+  );
+}

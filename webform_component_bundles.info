@@ -1,0 +1,9 @@
+name = Webform Component Bundles
+description = Enables the creation of component bundles for Webform
+core = 7.x
+package = Webform
+
+dependencies[] = webform (3.x)
+
+version = "7.x-3.x"
+core = "7.x"
