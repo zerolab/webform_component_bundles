@@ -192,7 +192,7 @@ function webform_component_bundles_menu_component_load($cid, $bid, $type) {
         'type' => $type,
         'bid' => $bid,
         'name' => $_GET['name'],
-        'mandatory' => $_GET['mandatory'],
+        'required' => $_GET['required'],
         'pid' => $_GET['pid'],
         'weight' => $_GET['weight'],
       );

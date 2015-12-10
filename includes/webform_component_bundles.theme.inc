@@ -24,7 +24,7 @@ function theme_webform_component_bundles_components_form($variables) {
   $bundle = $form['#bundle'];
 
   $header = array(
-    t('Label'), t('Type'), t('Value'), t('Mandatory'), t('Weight'), array(
+    t('Label'), t('Type'), t('Value'), t('Required'), t('Weight'), array(
       'data' => t('Operations'),
       'colspan' => 3,
     ),
@@ -42,7 +42,7 @@ function theme_webform_component_bundles_components_form($variables) {
     drupal_render($form['add']['name']),
     drupal_render($form['add']['type']),
     '',
-    drupal_render($form['add']['mandatory']),
+    drupal_render($form['add']['required']),
     drupal_render($form['add']['cid']) . drupal_render($form['add']['pid']) . drupal_render($form['add']['weight']),
     array('colspan' => 3, 'data' => drupal_render($form['add']['add'])),
   );
@@ -96,8 +96,8 @@ function _webform_components_bundles_components_form_rows($bundle, $cid, $compon
   }
   $component['value'] = check_plain($component['value']);
 
-  // Remove individual titles from the mandatory and weight fields.
-  unset($form['components'][$cid]['mandatory']['#title']);
+  // Remove individual titles from the required and weight fields.
+  unset($form['components'][$cid]['required']['#title']);
   unset($form['components'][$cid]['pid']['#title']);
   unset($form['components'][$cid]['weight']['#title']);
 
@@ -117,7 +117,7 @@ function _webform_components_bundles_components_form_rows($bundle, $cid, $compon
     $indents . filter_xss($component['name']),
     $form['add']['type']['#options'][$component['type']],
     ($component['value'] == '') ? '-' : $component['value'],
-    drupal_render($form['components'][$cid]['mandatory']),
+    drupal_render($form['components'][$cid]['required']),
     drupal_render($form['components'][$cid]['cid']) . drupal_render($form['components'][$cid]['pid']) . drupal_render($form['components'][$cid]['weight']),
     l(t('Edit'), 'admin/content/webform-bundle/' . $bundle->bid . '/components/' . $cid),
     l(t('Clone'), 'admin/content/webform-bundle/' . $bundle->bid . '/components/' . $cid . '/clone'),

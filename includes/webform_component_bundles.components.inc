@@ -43,13 +43,13 @@ function webform_component_bundles_components_form($form, &$form_state, $bundle)
 function webform_component_bundles_components_form_submit($form, &$form_state) {
   $bundle = webform_component_bundles_load($form['#bundle']->bid);
 
-  // Update all mandatory and weight values.
+  // Update all required and weight values.
   $changes = FALSE;
   foreach ($bundle->components as $cid => $component) {
-    if ($component['pid'] != $form_state['values']['components'][$cid]['pid'] || $component['weight'] != $form_state['values']['components'][$cid]['weight'] || $component['mandatory'] != $form_state['values']['components'][$cid]['mandatory']) {
+    if ($component['pid'] != $form_state['values']['components'][$cid]['pid'] || $component['weight'] != $form_state['values']['components'][$cid]['weight'] || $component['required'] != $form_state['values']['components'][$cid]['required']) {
       $changes = TRUE;
       $bundle->components[$cid]['weight'] = $form_state['values']['components'][$cid]['weight'];
-      $bundle->components[$cid]['mandatory'] = $form_state['values']['components'][$cid]['mandatory'];
+      $bundle->components[$cid]['required'] = $form_state['values']['components'][$cid]['required'];
       $bundle->components[$cid]['pid'] = $form_state['values']['components'][$cid]['pid'];
     }
   }
@@ -58,7 +58,7 @@ function webform_component_bundles_components_form_submit($form, &$form_state) {
     webform_component_bundles_save($bundle);
   }
 
-  drupal_set_message(t('The component positions and mandatory values have been updated.'));
+  drupal_set_message(t('The component positions and required values have been updated.'));
 }
 
 /**
@@ -73,7 +73,7 @@ function webform_component_bundles_components_form_add_submit($form, &$form_stat
     array(
       'query' => array(
         'name' => $component['name'],
-        'mandatory' => $component['mandatory'],
+        'required' => $component['required'],
         'pid' => $component['pid'],
         'weight' => $component['weight'],
       ),
@@ -190,7 +190,7 @@ function webform_component_bundles_component_insert(&$component) {
   //   $function($component);
   // }
   $component['value'] = isset($component['value']) ? $component['value'] : NULL;
-  $component['mandatory'] = isset($component['mandatory']) ? $component['mandatory'] : 0;
+  $component['required'] = isset($component['required']) ? $component['required'] : 0;
   $component['extra']['private'] = isset($component['extra']['private']) ? $component['extra']['private'] : 0;
 
   if (!isset($component['cid'])) {
@@ -219,7 +219,7 @@ function webform_component_bundles_component_insert(&$component) {
       'type' => $component['type'],
       'value' => (string) $component['value'],
       'extra' => serialize($component['extra']),
-      'mandatory' => (int) $component['mandatory'],
+      'required' => (int) $component['required'],
       'weight' => $component['weight'],
     ))
     ->execute();
@@ -242,7 +242,7 @@ function webform_component_bundles_component_update($component) {
   }
 
   $component['value'] = isset($component['value']) ? $component['value'] : NULL;
-  $component['mandatory'] = isset($component['mandatory']) ? $component['mandatory'] : 0;
+  $component['required'] = isset($component['required']) ? $component['required'] : 0;
   $component['extra']['private'] = isset($component['extra']['private']) ? $component['extra']['private'] : 0;
   db_update('webform_bundle_component')
     ->fields(array(
@@ -252,7 +252,7 @@ function webform_component_bundles_component_update($component) {
       'type' => $component['type'],
       'value' => isset($component['value']) ? $component['value'] : '',
       'extra' => serialize($component['extra']),
-      'mandatory' => (int) $component['mandatory'],
+      'required' => (int) $component['required'],
       'weight' => $component['weight'],
     ))
     ->condition('bid', $component['bid'])

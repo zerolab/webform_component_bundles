@@ -99,7 +99,7 @@ function webform_component_bundles_schema() {
         'type' => 'text',
         'not null' => TRUE,
       ),
-      'mandatory' => array(
+      'required' => array(
         'description' => 'Boolean flag for if this component is required.',
         'type' => 'int',
         'size' => 'tiny',
@@ -118,4 +118,21 @@ function webform_component_bundles_schema() {
   );
 
   return $schema;
+}
+
+/**
+ * Rename the "mandatory" column to "required".
+ */
+function webform_component_bundles_update_7400() {
+  $spec = array(
+    'description' => 'Boolean flag for if this component is required.',
+    'type' => 'int',
+    'size' => 'tiny',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+
+  if (!db_field_exists('webform_bundle_component', 'required')) {
+    db_change_field('webform_bundle_component', 'mandatory', 'required', $spec);
+  }
 }
