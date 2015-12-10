@@ -411,5 +411,9 @@ function webform_component_bundles_form_add_submit($form, &$form_state) {
 
   // Allow other modules to react to the just added bundle to a webform.
   module_invoke_all('webform_component_bundle_add', $bundle, $components);
+
+  // Clear the entity cache if Entity Cache module is installed.
+  if (module_exists('entitycache')) {
+    cache_clear_all($nid, 'cache_entity_node');
   }
 }
