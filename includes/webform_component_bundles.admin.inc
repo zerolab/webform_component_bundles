@@ -161,5 +161,5 @@ function webform_component_bundles_delete_form_submit($form, &$form_state) {
     drupal_set_message(t('Bundle %name successfully deleted.', array('%name' => $bundle->name)));
   }
 
-  $form_state['redirect'] = 'admin/content/webform-bundle/' . $bundle->bid . '/components';
+  $form_state['redirect'] = 'admin/content/webform-bundle';
 }
