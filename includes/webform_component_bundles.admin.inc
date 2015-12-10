@@ -20,31 +20,26 @@ function webform_component_bundles_admin_content() {
   $header = array(
     t('Title'),
     t('Description'),
-    array('data' => t('Operations'), 'colspan' => '3'),
+    t('Components'),
+    array('data' => t('Operations'), 'colspan' => '2'),
   );
   $rows = array();
 
-  if (empty($bundles)) {
-    $rows[] = array(
-      array(
-        'data' => t('There are currently no webform component bundles on your site. Please <a href="!url">create</a> one.', array('!url' => url('admin/content/webform-bundle/add'))),
-        'colspan' => 5,
-      ),
-    );
-  }
-  else {
+  if (!empty($bundles)) {
     foreach ($bundles as $bundle) {
       $rows[] = array(
         l($bundle->name, "admin/content/webform-bundle/{$bundle->bid}/edit"),
         check_plain($bundle->description),
-        user_access('edit webform bundle') ? l(t('Components'), "admin/content/webform-bundle/{$bundle->bid}/components") : '',
+        user_access('edit webform bundle') ? l(t('Manage'), "admin/content/webform-bundle/{$bundle->bid}/components") : '',
         user_access('edit webform bundle') ? l(t('Edit'), "admin/content/webform-bundle/{$bundle->bid}/edit") : '',
         user_access('delete webform bundle') ? l(t('Delete'), "admin/content/webform-bundle/{$bundle->bid}/delete") : '',
       );
     }
   }
 
-  $output = theme('table', array('header' => $header, 'rows' => $rows));
+  $empty = t('There are currently no webform component bundles on your site. Please <a href="!url">create</a> one.', array('!url' => url('admin/content/webform-bundle/add')));
+
+  $output = theme('table', array('header' => $header, 'rows' => $rows, 'empty' => $empty));
   $output .= theme('pager', array('tags' => array()));
 
   return $output;
