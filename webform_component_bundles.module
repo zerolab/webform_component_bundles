@@ -149,7 +149,7 @@ function webform_component_bundles_load($bid) {
   // Load components for each bundle.
   $bundle->components = db_select('webform_bundle_component')
     ->fields('webform_bundle_component')
-    ->condition('bid', $bid)
+    ->condition('bid', $bid, '=')
     ->orderBy('weight')
     ->orderBy('name')
     ->execute()
