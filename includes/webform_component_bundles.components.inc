@@ -4,6 +4,8 @@
  * @file
  * Webform components bundles forms and afferent callbacks.
  *
+ * vim:set sw=2 ts=2 et ft=php:
+ *
  * @todo prefix all bundle field keys with either bundle machine_name or bundle_
  */
 
@@ -103,15 +105,14 @@ function webform_component_bundles_component_edit_form($form, $form_state, $bund
   $form['#validate'] = array(
     'webform_component_bundles_component_edit_form_validate',
   );
-
   $form['#submit'] = array(
     'webform_component_bundles_component_edit_form_submit',
   );
 
-
   if ($clone) {
     drupal_set_title(t('Clone component: @name', array('@name' => $component['name'])), PASS_THROUGH);
   }
+
   return $form;
 }
 
@@ -184,11 +185,10 @@ function webform_component_bundles_component_edit_form_submit($form, &$form_stat
 function webform_component_bundles_component_insert(&$component) {
   // @todo check the need for this.
   // Allow modules to modify the component before saving.
-  //foreach (module_implements('webform_component_presave') as $module) {
-  //  $function = $module . '_webform_component_presave';
-  //  $function($component);
-  //}
-  //
+  // foreach (module_implements('webform_component_presave') as $module) {
+  //   $function = $module . '_webform_component_presave';
+  //   $function($component);
+  // }
   $component['value'] = isset($component['value']) ? $component['value'] : NULL;
   $component['mandatory'] = isset($component['mandatory']) ? $component['mandatory'] : 0;
   $component['extra']['private'] = isset($component['extra']['private']) ? $component['extra']['private'] : 0;
@@ -285,6 +285,9 @@ function webform_component_bundles_component_clone(&$bundle, &$component) {
   return $new_cid;
 }
 
+/**
+ * Component bundle delete form.
+ */
 function webform_component_bundles_component_delete_form($form, $form_state, $bundle, $component) {
   $cid = $component['cid'];
 

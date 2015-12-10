@@ -3,6 +3,8 @@
 /**
  * @file
  * Theme functions.
+ *
+ * vim:set sw=2 ts=2 et ft=php:
  */
 
 /**
@@ -21,7 +23,12 @@ function theme_webform_component_bundles_components_form($variables) {
 
   $bundle = $form['#bundle'];
 
-  $header = array(t('Label'), t('Type'), t('Value'), t('Mandatory'), t('Weight'), array('data' => t('Operations'), 'colspan' => 3));
+  $header = array(
+    t('Label'), t('Type'), t('Value'), t('Mandatory'), t('Weight'), array(
+      'data' => t('Operations'),
+      'colspan' => 3,
+    ),
+  );
   $rows = array();
 
   // Add a row containing form elements for a new item.
@@ -39,7 +46,10 @@ function theme_webform_component_bundles_components_form($variables) {
     drupal_render($form['add']['cid']) . drupal_render($form['add']['pid']) . drupal_render($form['add']['weight']),
     array('colspan' => 3, 'data' => drupal_render($form['add']['add'])),
   );
-  $add_form = array('data' => $row_data, 'class' => array('draggable', 'webform-add-form'));
+  $add_form = array(
+    'data' => $row_data,
+    'class' => array('draggable', 'webform-add-form'),
+  );
 
   $form_rendered = FALSE;
 
@@ -65,8 +75,13 @@ function theme_webform_component_bundles_components_form($variables) {
   }
 
   $output = '';
-  $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'webform-components')));
+  $output .= theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array('id' => 'webform-components'),
+  ));
   $output .= drupal_render_children($form);
+
   return $output;
 }
 

@@ -3,6 +3,8 @@
 /**
  * @file
  * Administrative pages and forms callbacks.
+ *
+ * vim:set sw=2 ts=2 et ft=php:
  */
 
 /**
@@ -23,10 +25,12 @@ function webform_component_bundles_admin_content() {
   $rows = array();
 
   if (empty($bundles)) {
-    $rows[] = array(array(
+    $rows[] = array(
+      array(
         'data' => t('There are currently no webform component bundles on your site. Please <a href="!url">create</a> one.', array('!url' => url('admin/content/webform-bundle/add'))),
         'colspan' => 5,
-    ));
+      ),
+    );
   }
   else {
     foreach ($bundles as $bundle) {
@@ -47,7 +51,7 @@ function webform_component_bundles_admin_content() {
 }
 
 /**
- * Menu callback
+ * Menu callback.
  */
 function webform_component_bundles_add_form($form, &$form_state, $bundle = FALSE) {
   $form = array();
@@ -139,7 +143,7 @@ function webform_component_bundles_delete_form($form, &$form_state, $bundle) {
   );
 
   $question = t('Delete the %name bundle?', array('%name' => $bundle->name));
-  $description = t('This will immediately delete the %name bundle. Webforms using this bundle componentes will not be affected. This cannot be undone.', array('%name' =>$bundle->name));
+  $description = t('This will immediately delete the %name bundle. Webforms using this bundle componentes will not be affected. This cannot be undone.', array('%name' => $bundle->name));
 
   return confirm_form($form, $question, 'admin/content/webform-bundle/' . $bundle->bid . '/components', $description, t('Delete'));
 }

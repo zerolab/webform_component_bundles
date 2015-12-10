@@ -6,6 +6,8 @@
  *
  * This module allows defining bundles of webform components to be added to new
  * or existing webforms for faster and consistent form creation.
+ *
+ * vim:set sw=2 ts=2 et ft=php:
  */
 
 /**
@@ -74,7 +76,7 @@ function webform_component_bundles_menu() {
     'load arguments' => array(3, 6),
     'page callback' => 'drupal_get_form',
     'page arguments' => array(
-      'webform_component_bundles_component_edit_form', 3, 5, TRUE
+      'webform_component_bundles_component_edit_form', 3, 5, TRUE,
     ),
     'access arguments' => array('edit webform bundle'),
     'file' => 'includes/webform_component_bundles.components.inc',
@@ -85,7 +87,7 @@ function webform_component_bundles_menu() {
     'load arguments' => array(3, 6),
     'page callback' => 'drupal_get_form',
     'page arguments' => array(
-      'webform_component_bundles_component_delete_form', 3, 5, TRUE
+      'webform_component_bundles_component_delete_form', 3, 5, TRUE,
     ),
     'access arguments' => array('edit webform bundle'),
     'file' => 'includes/webform_component_bundles.components.inc',
@@ -282,9 +284,9 @@ function webform_component_bundles_form_webform_components_form_alter(& $form, &
   );
 
   $form['bundles']['bid'] = array(
-   '#type' => 'select',
-   '#options' => array('' => '-Select bundle-') + $bundles,
-   '#description' => t('Add a component bundle to your webform. <a href="!url" target=_blank>Available bundles</a>', array('!url' => url('admin/content/webform-bundle'))),
+    '#type' => 'select',
+    '#options' => array('' => '-Select bundle-') + $bundles,
+    '#description' => t('Add a component bundle to your webform. <a href="!url" target=_blank>Available bundles</a>', array('!url' => url('admin/content/webform-bundle'))),
   );
 
   // Get max component height.
@@ -298,7 +300,6 @@ function webform_component_bundles_form_webform_components_form_alter(& $form, &
     '#type' => 'value',
     '#value' => isset($max_weight) ? $max_weight + 1 : 0,
   );
-
 
   $form['bundles']['add'] = array(
     '#type' => 'submit',
