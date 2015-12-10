@@ -7,7 +7,7 @@ existing Webforms.
 ## Requirements
 
 - Drupal 7.x
-- [Webform](https://www.drupal.org/project/webform) 7.x-3.x
+- [Webform](https://www.drupal.org/project/webform) 7.x-4.x
 
 ## Installation
 
