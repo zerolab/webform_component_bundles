@@ -361,13 +361,17 @@ function webform_component_bundles_form_add_validate($form, &$form_state) {
  *
  * @todo insert page break if first/last components have different `page_num`s.
  */
-function webform_component_bundless_form_add_submit($form, &$form_state) {
+function webform_component_bundles_form_add_submit($form, &$form_state) {
   $bid = $form_state['values']['bundles']['bid'];
   $bundle = webform_component_bundles_load($bid);
 
   $nid = $form_state['values']['nid'];
   $weight = $form_state['values']['bundles']['weight'];
 
+  // Holds the actual webform inserted components.
+  $components = array();
+
+  module_load_include('inc', 'webform', 'components/fieldset');
   $bundle_wrapper_component = _webform_defaults_fieldset();
   $bundle_wrapper_component['type'] = 'fieldset';
   $bundle_wrapper_component['nid'] = $nid;
@@ -376,6 +380,7 @@ function webform_component_bundless_form_add_submit($form, &$form_state) {
   $bundle_wrapper_component['weight'] = $weight;
 
   $bundle_wrapper_cid = webform_component_insert($bundle_wrapper_component);
+  $components[$bundle_wrapper_cid] = $bundle_wrapper_component;
 
   foreach ($bundle->components as $cid => $component) {
     // Remove the cid as this is a new component on the current webform.
@@ -386,5 +391,25 @@ function webform_component_bundless_form_add_submit($form, &$form_state) {
     // $component['weight'] += $weight;
 
     webform_component_insert($component);
+
+    $components[$component['cid']] = $component;
+  }
+
+  // Insert page break.
+  if ($form_state['values']['bundles']['pagebreak']) {
+    module_load_include('inc', 'webform', 'components/pagebreak');
+    $break = _webform_defaults_pagebreak();
+    $break['type'] = 'pagebreak';
+    $break['name'] = 'Page break: ' . $bundle->name;
+    $break['nid'] = $nid;
+    $break['form_key'] = 'page_' . $bundle->machine_name;
+    $break['weight'] = $weight + 1;
+    webform_component_insert($break);
+
+    $components[$break['cid']] = $break;
+  }
+
+  // Allow other modules to react to the just added bundle to a webform.
+  module_invoke_all('webform_component_bundle_add', $bundle, $components);
   }
 }

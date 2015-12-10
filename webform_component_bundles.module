@@ -262,8 +262,7 @@ function webform_component_bundles_bundle_exists($machine_name) {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function webform_component_bundles_form_webform_components_form_alter(& $form, &$form_state) {
-
+function webform_component_bundles_form_webform_components_form_alter(&$form, &$form_state) {
   $bundles = db_select('webform_bundle')
     ->fields('webform_bundle', array('bid', 'name'))
     ->execute()->fetchAllKeyed(0, 1);
@@ -285,8 +284,14 @@ function webform_component_bundles_form_webform_components_form_alter(& $form, &
 
   $form['bundles']['bid'] = array(
     '#type' => 'select',
-    '#options' => array('' => '-Select bundle-') + $bundles,
+    '#options' => array('' => '-- Select bundle --') + $bundles,
     '#description' => t('Add a component bundle to your webform. <a href="!url" target=_blank>Available bundles</a>', array('!url' => url('admin/content/webform-bundle'))),
+  );
+
+  $form['bundles']['pagebreak'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include page break'),
+    '#description' => t('Tick this to include a page break after the bundle.'),
   );
 
   // Get max component height.
@@ -306,6 +311,6 @@ function webform_component_bundles_form_webform_components_form_alter(& $form, &
     '#value' => t('Add component bundle'),
     '#weight' => 45,
     '#validate' => array('webform_component_bundles_form_add_validate'),
-    '#submit' => array('webform_component_bundless_form_add_submit'),
+    '#submit' => array('webform_component_bundles_form_add_submit'),
   );
 }
