@@ -181,6 +181,9 @@ function webform_component_bundles_component_edit_form_submit($form, &$form_stat
  *
  * @param array $component
  *   A full component containing fields from the component form.
+ *
+ * @return int
+ *   The component id.
  */
 function webform_component_bundles_component_insert(&$component) {
   // @todo check the need for this.
@@ -209,7 +212,7 @@ function webform_component_bundles_component_insert(&$component) {
     }
   }
 
-  $query = db_insert('webform_bundle_component')
+  db_insert('webform_bundle_component')
     ->fields(array(
       'bid' => $component['bid'],
       'cid' => $component['cid'],

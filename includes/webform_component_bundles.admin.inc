@@ -21,7 +21,7 @@ function webform_component_bundles_admin_content() {
     t('Title'),
     t('Description'),
     t('Components'),
-    array('data' => t('Operations'), 'colspan' => '2'),
+    array('data' => t('Operations'), 'colspan' => '3'),
   );
   $rows = array();
 
@@ -32,6 +32,7 @@ function webform_component_bundles_admin_content() {
         check_plain($bundle->description),
         user_access('edit webform bundle') ? l(t('Manage'), "admin/content/webform-bundle/{$bundle->bid}/components") : '',
         user_access('edit webform bundle') ? l(t('Edit'), "admin/content/webform-bundle/{$bundle->bid}/edit") : '',
+        user_access('edit webform bundle') ? l(t('Clone'), "admin/content/webform-bundle/{$bundle->bid}/clone") : '',
         user_access('delete webform bundle') ? l(t('Delete'), "admin/content/webform-bundle/{$bundle->bid}/delete") : '',
       );
     }
@@ -66,14 +67,13 @@ function webform_component_bundles_add_form($form, &$form_state, $bundle = FALSE
 
   $form['machine_name'] = array(
     '#type' => 'machine_name',
-    '#description' => t('The name is used in URLs for generated images. Use only lowercase alphanumeric characters, underscores (_), and hyphens (-).'),
+    '#description' => t('A unique machine-readable name for this bundle . It must only contain lowercase letters, numbers and underscores (_).'),
     '#disabled' => 0,
     '#required' => TRUE,
     '#machine_name' => array(
       'exists' => 'webform_component_bundles_bundle_exists',
       'source' => array('name'),
-      'replace_pattern' => '[^0-9a-z_\-]',
-      'error' => t('Please only use lowercase alphanumeric characters, underscores (_), and hyphens (-) for style names.'),
+      'error' => t('Please only use lowercase letters, numbers and underscores (_).'),
     ),
     '#default_value' => $bundle ? $bundle->machine_name : '',
   );
@@ -112,6 +112,11 @@ function webform_component_bundles_add_form_submit($form, &$form_state) {
   drupal_write_record('webform_bundle', $bundle, $primary_keys);
 
   $bid = $bundle['bid'];
+  // The form is re-used for edit/clone. Save the bundle id.
+  if (!$form_state['values']['bid']) {
+    $form_state['values']['bid'] = $bid;
+  }
+
   $form_state['redirect'] = "admin/content/webform-bundle/{$bid}/components";
 }
 
@@ -157,4 +162,55 @@ function webform_component_bundles_delete_form_submit($form, &$form_state) {
   }
 
   $form_state['redirect'] = 'admin/content/webform-bundle';
+}
+
+/**
+ * Bundle clone form.
+ */
+function webform_component_bundles_clone_form($form, &$form_state, $bundle) {
+  // The clone and add form are virtually the same.
+  // The difference is that the bundle id is set to NULL and
+  // we pass the source bundle.
+  $form = webform_component_bundles_add_form($form, $form_state, $bundle);
+
+  $form['bid']['#value'] = NULL;
+
+  $form['components'] = array(
+    '#type' => 'hidden',
+    '#value' => $bundle->components,
+  );
+
+  $form['name']['#default_value'] = t('Clone of ') . $form['name']['#default_value'];
+  // The machine_name validation will not trigger if a default value is set.
+  $form['machine_name']['#default_value'] = '';
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Clone'),
+  );
+
+  $form['#submit'] = array(
+    'webform_component_bundles_add_form_submit',
+    'webform_component_bundles_clone_form_submit',
+  );
+
+  return $form;
+}
+
+/**
+ * Bundle clone form submit callback.
+ */
+function webform_component_bundles_clone_form_submit($form, &$form_state) {
+  if (!$form_state['values']['bid']) {
+    return;
+  }
+
+  $bid = $form_state['values']['bid'];
+  $components = $form_state['values']['components'];
+
+  module_load_include('inc', 'webform_component_bundles', 'includes/webform_component_bundles.components');
+  foreach ($components as $component) {
+    $component['bid'] = $bid;
+    webform_component_bundles_component_insert($component);
+  }
 }
