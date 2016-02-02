@@ -20,7 +20,8 @@ function webform_component_bundles_admin_content() {
   $header = array(
     t('Title'),
     t('Description'),
-    array('data' => t('Operations'), 'colspan' => '4'),
+    t('Components'),
+    array('data' => t('Operations'), 'colspan' => '3'),
   );
   $rows = array();
 
@@ -37,8 +38,8 @@ function webform_component_bundles_admin_content() {
       $rows[] = array(
         l($bundle->name, "admin/content/webform-bundle/{$bundle->bid}/edit"),
         check_plain($bundle->description),
+        user_access('edit webform bundle') ? l(t('Manage'), "admin/content/webform-bundle/{$bundle->bid}/components") : '',
         user_access('edit webform bundle') ? l(t('Edit'), "admin/content/webform-bundle/{$bundle->bid}/edit") : '',
-        user_access('edit webform bundle') ? l(t('Manage components'), "admin/content/webform-bundle/{$bundle->bid}/components") : '',
         user_access('edit webform bundle') ? l(t('Clone'), "admin/content/webform-bundle/{$bundle->bid}/clone") : '',
         user_access('delete webform bundle') ? l(t('Delete'), "admin/content/webform-bundle/{$bundle->bid}/delete") : '',
       );
